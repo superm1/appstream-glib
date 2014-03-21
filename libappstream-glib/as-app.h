@@ -156,7 +156,8 @@ AsAppSourceKind	 as_app_get_source_kind		(AsApp		*app);
 GList		*as_app_get_languages		(AsApp		*app);
 GPtrArray	*as_app_get_categories		(AsApp		*app);
 GPtrArray	*as_app_get_compulsory_for_desktops (AsApp	*app);
-GPtrArray	*as_app_get_keywords		(AsApp		*app);
+GPtrArray	*as_app_get_keywords		(AsApp		*app,
+						 const gchar	*locale);
 GPtrArray	*as_app_get_pkgnames		(AsApp		*app);
 GPtrArray	*as_app_get_architectures	(AsApp		*app);
 GPtrArray	*as_app_get_releases		(AsApp		*app);
@@ -230,6 +231,7 @@ void		 as_app_add_category		(AsApp		*app,
 						 const gchar	*category,
 						 gssize		 category_len);
 void		 as_app_add_keyword		(AsApp		*app,
+						 const gchar	*locale,
 						 const gchar	*keyword,
 						 gssize		 keyword_len);
 void		 as_app_add_mimetype		(AsApp		*app,

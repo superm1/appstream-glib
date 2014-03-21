@@ -53,13 +53,13 @@ struct _AsAppPrivate
 	AsIdKind	 id_kind;
 	GHashTable	*comments;			/* of locale:string */
 	GHashTable	*descriptions;			/* of locale:string */
+	GHashTable	*keywords;			/* of locale:GPtrArray */
 	GHashTable	*languages;			/* of locale:string */
 	GHashTable	*metadata;			/* of key:value */
 	GHashTable	*names;				/* of locale:string */
 	GHashTable	*urls;				/* of key:string */
 	GPtrArray	*categories;			/* of string */
 	GPtrArray	*compulsory_for_desktops;	/* of string */
-	GPtrArray	*keywords;			/* of string */
 	GPtrArray	*mimetypes;			/* of string */
 	GPtrArray	*pkgnames;			/* of string */
 	GPtrArray	*architectures;			/* of string */
@@ -124,13 +124,13 @@ as_app_finalize (GObject *object)
 	g_free (priv->update_contact);
 	g_hash_table_unref (priv->comments);
 	g_hash_table_unref (priv->descriptions);
+	g_hash_table_unref (priv->keywords);
 	g_hash_table_unref (priv->languages);
 	g_hash_table_unref (priv->metadata);
 	g_hash_table_unref (priv->names);
 	g_hash_table_unref (priv->urls);
 	g_ptr_array_unref (priv->categories);
 	g_ptr_array_unref (priv->compulsory_for_desktops);
-	g_ptr_array_unref (priv->keywords);
 	g_ptr_array_unref (priv->mimetypes);
 	g_ptr_array_unref (priv->pkgnames);
 	g_ptr_array_unref (priv->architectures);
@@ -161,7 +161,8 @@ as_app_init (AsApp *app)
 	AsAppPrivate *priv = GET_PRIVATE (app);
 	priv->categories = g_ptr_array_new_with_free_func (g_free);
 	priv->compulsory_for_desktops = g_ptr_array_new_with_free_func (g_free);
-	priv->keywords = g_ptr_array_new_with_free_func (g_free);
+	priv->keywords = g_hash_table_new_full (g_str_hash, g_str_equal,
+						g_free, (GDestroyNotify) g_ptr_array_unref);
 	priv->mimetypes = g_ptr_array_new_with_free_func (g_free);
 	priv->pkgnames = g_ptr_array_new_with_free_func (g_free);
 	priv->architectures = g_ptr_array_new_with_free_func (g_free);
@@ -287,18 +288,28 @@ as_app_get_compulsory_for_desktops (AsApp *app)
 /**
  * as_app_get_keywords:
  * @app: a #AsApp instance.
+ * @locale: the locale, or %NULL. e.g. "en_GB"
  *
  * Gets any keywords the application should match against.
  *
  * Returns: (element-type utf8) (transfer none): an array
  *
- * Since: 0.1.0
+ * Since: 0.1.2
  **/
 GPtrArray *
-as_app_get_keywords (AsApp *app)
+as_app_get_keywords (AsApp *app, const gchar *locale)
 {
 	AsAppPrivate *priv = GET_PRIVATE (app);
-	return priv->keywords;
+	GPtrArray *tmp;
+
+	/* return an empty array if no results */
+	tmp = (GPtrArray *) as_hash_lookup_by_locale (priv->keywords, locale);
+	if (tmp == NULL) {
+		tmp = g_ptr_array_new_with_free_func (g_free);
+		g_hash_table_insert (priv->keywords, g_strdup (locale), tmp);
+	}
+
+	return tmp;
 }
 
 /**
@@ -1155,20 +1166,33 @@ as_app_add_compulsory_for_desktop (AsApp *app,
 /**
  * as_app_add_keyword:
  * @app: a #AsApp instance.
+ * @locale: the locale, or %NULL. e.g. "en_GB"
  * @keyword: the keyword.
  * @keyword_len: the size of @keyword, or -1 if %NULL-terminated.
  *
  * Add a keyword the application should match against.
  *
- * Since: 0.1.0
+ * Since: 0.1.2
  **/
 void
-as_app_add_keyword (AsApp *app, const gchar *keyword, gssize keyword_len)
+as_app_add_keyword (AsApp *app,
+		    const gchar *locale,
+		    const gchar *keyword,
+		    gssize keyword_len)
 {
 	AsAppPrivate *priv = GET_PRIVATE (app);
-	if (as_app_array_find_string (priv->keywords, keyword))
-		return;
-	g_ptr_array_add (priv->keywords, as_strndup (keyword, keyword_len));
+	GPtrArray *tmp;
+
+	/* create an array if required */
+	tmp = g_hash_table_lookup (priv->keywords, locale);
+	if (tmp == NULL) {
+		tmp = g_ptr_array_new_with_free_func (g_free);
+		g_hash_table_insert (priv->keywords, g_strdup (locale), tmp);
+	} else {
+		if (as_app_array_find_string (tmp, keyword))
+			return;
+	}
+	g_ptr_array_add (tmp, as_strndup (keyword, keyword_len));
 }
 
 /**
@@ -1519,6 +1543,50 @@ as_app_node_insert_languages (AsApp *app, GNode *parent)
 }
 
 /**
+ * as_app_list_sort_cb:
+ **/
+static gint
+as_app_list_sort_cb (gconstpointer a, gconstpointer b)
+{
+	return g_strcmp0 ((const gchar *) a, (const gchar *) b);
+}
+
+/**
+ * as_app_node_insert_keywords:
+ **/
+static void
+as_app_node_insert_keywords (AsApp *app, GNode *parent, gdouble api_version)
+{
+	AsAppPrivate *priv = GET_PRIVATE (app);
+	GList *keys;
+	GList *l;
+	GNode *node_tmp;
+	GPtrArray *keywords;
+	const gchar *lang;
+	const gchar *tmp;
+	guint i;
+
+	keys = g_hash_table_get_keys (priv->keywords);
+	keys = g_list_sort (keys, as_app_list_sort_cb);
+	for (l = keys; l != NULL; l = l->next) {
+		lang = l->data;
+		keywords = g_hash_table_lookup (priv->keywords, lang);
+		for (i = 0; i < keywords->len; i++) {
+			tmp = g_ptr_array_index (keywords, i);
+			node_tmp = as_node_insert (parent,
+						   "keyword", tmp,
+						   0, NULL);
+			if (g_strcmp0 (lang, "C") != 0) {
+				as_node_add_attribute (node_tmp,
+						       "xml:lang",
+						       lang, -1);
+			}
+		}
+	}
+	g_list_free (keys);
+}
+
+/**
  * as_app_node_insert: (skip)
  * @app: a #AsApp instance.
  * @parent: the parent #GNode to use..
@@ -1639,12 +1707,9 @@ as_app_node_insert (AsApp *app, GNode *parent, gdouble api_version)
 	}
 
 	/* <keywords> */
-	if (priv->keywords->len > 0) {
+	if (g_hash_table_size (priv->keywords) > 0) {
 		node_tmp = as_node_insert (node_app, "keywords", NULL, 0, NULL);
-		for (i = 0; i < priv->keywords->len; i++) {
-			tmp = g_ptr_array_index (priv->keywords, i);
-			as_node_insert (node_tmp, "keyword", tmp, 0, NULL);
-		}
+		as_app_node_insert_keywords (app, node_tmp, api_version);
 	}
 
 	/* <mimetypes> */
@@ -1726,6 +1791,7 @@ as_app_node_parse_child (AsApp *app, GNode *n, GError **error)
 	AsRelease *r;
 	AsScreenshot *ss;
 	GNode *c;
+	GPtrArray *array;
 	GString *xml;
 	const gchar *tmp;
 	gboolean ret = TRUE;
@@ -1821,11 +1887,20 @@ as_app_node_parse_child (AsApp *app, GNode *n, GError **error)
 
 	/* <keywords> */
 	case AS_TAG_KEYWORDS:
-		g_ptr_array_set_size (priv->keywords, 0);
 		for (c = n->children; c != NULL; c = c->next) {
 			if (as_node_get_tag (c) != AS_TAG_KEYWORD)
 				continue;
-			g_ptr_array_add (priv->keywords, as_node_take_data (c));
+			tmp = as_node_get_attribute (c, "xml:lang");
+			if (tmp == NULL)
+				tmp = "C";
+			array = g_hash_table_lookup (priv->keywords, tmp);
+			if (array == NULL) {
+				array = g_ptr_array_new_with_free_func (g_free);
+				g_hash_table_insert (priv->keywords,
+						     g_strdup (tmp),
+						     array);
+			}
+			g_ptr_array_add (array, as_node_take_data (c));
 		}
 		break;
 
@@ -1982,6 +2057,7 @@ as_app_node_parse (AsApp *app, GNode *node, GError **error)
 	g_ptr_array_set_size (priv->compulsory_for_desktops, 0);
 	g_ptr_array_set_size (priv->pkgnames, 0);
 	g_ptr_array_set_size (priv->architectures, 0);
+	g_hash_table_remove_all (priv->keywords);
 	for (n = node->children; n != NULL; n = n->next) {
 		ret = as_app_node_parse_child (app, n, error);
 		if (!ret)
@@ -2053,6 +2129,7 @@ static void
 as_app_create_token_cache (AsApp *app)
 {
 	AsAppPrivate *priv = GET_PRIVATE (app);
+	GPtrArray *keywords;
 	const gchar * const *locales;
 	const gchar *tmp;
 	guint i;
@@ -2071,10 +2148,13 @@ as_app_create_token_cache (AsApp *app)
 		tmp = as_app_get_description (app, locales[i]);
 		if (tmp != NULL)
 			as_app_add_tokens (app, tmp, locales[i], 20);
-	}
-	for (i = 0; i < priv->keywords->len; i++) {
-		tmp = g_ptr_array_index (priv->keywords, i);
-		as_app_add_tokens (app, tmp, "C", 40);
+		keywords = g_hash_table_lookup (priv->keywords, locales[i]);
+		if (keywords != NULL) {
+			for (i = 0; i < keywords->len; i++) {
+				tmp = g_ptr_array_index (keywords, i);
+				as_app_add_tokens (app, tmp, locales[i], 40);
+			}
+		}
 	}
 	for (i = 0; i < priv->mimetypes->len; i++) {
 		tmp = g_ptr_array_index (priv->mimetypes, i);
@@ -2344,7 +2424,19 @@ as_app_parse_file_key (AsApp *app,
 						   key,
 						   NULL, NULL);
 		for (i = 0; list[i] != NULL; i++)
-			as_app_add_keyword (app, list[i], -1);
+			as_app_add_keyword (app, "C", list[i], -1);
+		goto out;
+	}
+
+	if (g_str_has_prefix (key, "Keywords")) {
+		locale = as_app_desktop_key_get_locale (key);
+		list = g_key_file_get_locale_string_list (kf,
+							  G_KEY_FILE_DESKTOP_GROUP,
+							  key,
+							  locale,
+							  NULL, NULL);
+		for (i = 0; list[i] != NULL; i++)
+			as_app_add_keyword (app, locale, list[i], -1);
 		goto out;
 	}
 

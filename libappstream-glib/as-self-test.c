@@ -280,6 +280,10 @@ ch_test_app_func (void)
 		"<mimetypes>"
 		"<mimetype>application/vnd.oasis.opendocument.spreadsheet</mimetype>"
 		"</mimetypes>"
+		"<keywords>"
+		"<keyword>software</keyword>"
+		"<keyword xml:lang=\"pl\">informacje</keyword>"
+		"</keywords>"
 		"<project_license>GPLv2+</project_license>"
 		"<url type=\"homepage\">https://wiki.gnome.org/Design/Apps/Software</url>"
 		"<project_group>GNOME</project_group>"
@@ -581,6 +585,10 @@ ch_test_app_parse_file_func (void)
 	g_assert_cmpint (as_app_get_categories(app)->len, ==, 1);
 	g_assert (as_app_has_category (app, "System"));
 	g_assert (!as_app_has_category (app, "NotGoingToExist"));
+
+	/* check localized keywords */
+	g_assert_cmpint (as_app_get_keywords(app, "C")->len, ==, 3);
+	g_assert_cmpint (as_app_get_keywords(app, "pl")->len, ==, 5);
 
 	/* reparse with heuristics */
 	ret = as_app_parse_file (app,

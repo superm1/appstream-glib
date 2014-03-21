@@ -13,3 +13,5 @@ NoDisplay=true
 X-GNOME-Bugzilla-Bugzilla=GNOME
 X-GNOME-Bugzilla-Product=gnome-color-manager
 X-GNOME-Bugzilla-Component=gnome-color-manager
+Keywords=documentation;information;manual;
+Keywords[pl]=dokumentacja;informacje;podręcznik;przewodnik;manual;
