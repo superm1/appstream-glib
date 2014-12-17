@@ -81,6 +81,7 @@ asb_plugin_initialize (AsbPlugin *plugin)
 		{ "specto.desktop",		"Upstream abandoned, see: http://jeff.ecchi.ca/blog/2013/03/21/a-programs-obsolescence/" },
 		{ "vkeybd.desktop",		"Upstream abandoned" },
 		{ "rott-registered.desktop",	"Requires purchase of original game: http://icculus.org/rott/" },
+		{ "xwrits.desktop",		"Upstream abandoned, see: http://www.lcdf.org/xwrits/changes.html" },
 		{ NULL, NULL } };
 
 	plugin->priv = ASB_PLUGIN_GET_PRIVATE (AsbPluginPrivate);
