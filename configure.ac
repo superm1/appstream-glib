@@ -220,6 +220,7 @@ libappstream-builder/Makefile
 libappstream-builder/appstream-builder.pc
 libappstream-builder/plugins/Makefile
 libappstream-glib/Makefile
+libappstream-glib/appstream-glib-helper.pc
 libappstream-glib/appstream-glib.pc
 libappstream-glib/as-version.h
 data/Makefile

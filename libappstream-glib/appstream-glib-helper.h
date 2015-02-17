@@ -24,21 +24,8 @@
 
 #define __APPSTREAM_GLIB_H_INSIDE__
 
-#include <as-app.h>
-#include <as-bundle.h>
-#include <as-enums.h>
-#include <as-icon.h>
-#include <as-image.h>
-#include <as-node.h>
-#include <as-problem.h>
-#include <as-provide.h>
-#include <as-release.h>
-#include <as-screenshot.h>
-#include <as-store.h>
-#include <as-tag.h>
-#include <as-version.h>
-#include <as-utils.h>
 #include <as-utils-helper.h>
+#include <as-version.h>
 
 #undef __APPSTREAM_GLIB_H_INSIDE__
 

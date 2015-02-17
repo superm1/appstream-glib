@@ -49,6 +49,13 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 %description devel
 GLib headers and libraries for appstream-glib.
 
+%package helper
+Summary: Helper library for installing AppStream metadata
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description helper
+This library is used for installing AppStream metadata.
+
 %package builder
 Summary: Library and command line tools for building AppStream metadata
 Requires: %{name}%{?_isa} = %{version}-%{release}
@@ -102,9 +109,14 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_datadir}/bash-completion/completions/appstream-util
 %{_mandir}/man1/appstream-util.1.gz
 
+%files helper
+%{_libdir}/libappstream-glib-helper.so.7*
+
 %files devel
 %{_libdir}/libappstream-glib.so
+%{_libdir}/libappstream-glib-helper.so
 %{_libdir}/pkgconfig/appstream-glib.pc
+%{_libdir}/pkgconfig/appstream-glib-helper.pc
 %dir %{_includedir}/libappstream-glib
 %{_includedir}/libappstream-glib/*.h
 %{_datadir}/gtk-doc/html/appstream-glib

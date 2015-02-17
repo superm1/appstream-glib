@@ -21,6 +21,7 @@ AM_CPPFLAGS =							\
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = 						\
+	appstream-glib-helper.pc				\
 	appstream-glib.pc
 
 if HAVE_GPERF
@@ -62,11 +63,13 @@ BUILT_SOURCES =							\
 	as-resources.h
 
 lib_LTLIBRARIES =						\
-	libappstream-glib.la
+	libappstream-glib.la					\
+	libappstream-glib-helper.la
 
 libappstream_glib_includedir = $(includedir)/libappstream-glib
 libappstream_glib_include_HEADERS =				\
 	appstream-glib.h					\
+	appstream-glib-helper.h					\
 	as-app.h						\
 	as-bundle.h						\
 	as-enums.h						\
@@ -80,6 +83,7 @@ libappstream_glib_include_HEADERS =				\
 	as-store.h						\
 	as-tag.h						\
 	as-utils.h						\
+	as-utils-helper.h					\
 	as-version.h
 
 libappstream_glib_la_SOURCES =					\
@@ -109,6 +113,8 @@ libappstream_glib_la_SOURCES =					\
 	as-store.c						\
 	as-tag.c						\
 	as-utils.c						\
+	as-utils-helper.c					\
+	as-utils-helper.h					\
 	as-utils-private.h					\
 	as-version.h						\
 	as-yaml.c						\
@@ -135,6 +141,25 @@ libappstream_glib_la_LDFLAGS =					\
 	-export-symbols-regex '^as_.*'
 
 libappstream_glib_la_CFLAGS =					\
+	$(WARNINGFLAGS_C)
+
+libappstream_glib_helper_la_SOURCES =				\
+	as-store.c						\
+	as-store.h						\
+	as-utils-helper.c					\
+	as-utils-helper.h
+
+libappstream_glib_helper_la_LIBADD =				\
+	$(GLIB_LIBS)						\
+	$(LIBARCHIVE_LIBS)
+
+libappstream_glib_helper_la_LDFLAGS =				\
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
+	-export-dynamic						\
+	-no-undefined						\
+	-export-symbols-regex '^as_.*'
+
+libappstream_glib_helper_la_CFLAGS =				\
 	$(WARNINGFLAGS_C)
 
 check_PROGRAMS =						\
@@ -210,6 +235,7 @@ DISTCLEANFILES =						\
 
 EXTRA_DIST =							\
 	appstream-glib.gresource.xml				\
+	appstream-glib-helper.pc.in				\
 	appstream-glib.pc.in					\
 	as-blacklist-ids.txt					\
 	as-category-ids.txt					\
