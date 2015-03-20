@@ -43,6 +43,7 @@
 #include "as-cleanup.h"
 #include "as-enums.h"
 #include "as-node.h"
+#include "as-pixbuf.h"
 #include "as-resources.h"
 #include "as-store.h"
 #include "as-utils.h"
@@ -756,16 +757,16 @@ as_pixbuf_blur_private (GdkPixbuf *src, GdkPixbuf *dest, gint radius, guchar *di
 	gint r, g, b, a;
 	guchar *p_dest_row, *p_dest_col;
 
-	width = gdk_pixbuf_get_width (src);
-	height = gdk_pixbuf_get_height (src);
-	n_channels = gdk_pixbuf_get_n_channels (src);
+	width = as_pixbuf_get_width (src);
+	height = as_pixbuf_get_height (src);
+	n_channels = as_pixbuf_get_n_channels (src);
 	radius_plus_1 = radius + 1;
 
 	/* horizontal blur */
-	p_src = gdk_pixbuf_get_pixels (src);
-	p_dest = gdk_pixbuf_get_pixels (dest);
-	src_rowstride = gdk_pixbuf_get_rowstride (src);
-	dest_rowstride = gdk_pixbuf_get_rowstride (dest);
+	p_src = as_pixbuf_get_pixels (src, NULL);
+	p_dest = as_pixbuf_get_pixels (dest, NULL);
+	src_rowstride = as_pixbuf_get_rowstride (src);
+	dest_rowstride = as_pixbuf_get_rowstride (dest);
 	width_minus_1 = width - 1;
 	for (y = 0; y < height; y++) {
 
@@ -809,10 +810,10 @@ as_pixbuf_blur_private (GdkPixbuf *src, GdkPixbuf *dest, gint radius, guchar *di
 	}
 
 	/* vertical blur */
-	p_src = gdk_pixbuf_get_pixels (dest);
-	p_dest = gdk_pixbuf_get_pixels (src);
-	src_rowstride = gdk_pixbuf_get_rowstride (dest);
-	dest_rowstride = gdk_pixbuf_get_rowstride (src);
+	p_src = as_pixbuf_get_pixels (dest, NULL);
+	p_dest = as_pixbuf_get_pixels (src, NULL);
+	src_rowstride = as_pixbuf_get_rowstride (dest);
+	dest_rowstride = as_pixbuf_get_rowstride (src);
 	height_minus_1 = height - 1;
 	for (x = 0; x < width; x++) {
 
@@ -875,11 +876,10 @@ as_pixbuf_blur (GdkPixbuf *src, gint radius, gint iterations)
 	_cleanup_free_ guchar *div_kernel_size = NULL;
 	_cleanup_object_unref_ GdkPixbuf *tmp = NULL;
 
-	tmp = gdk_pixbuf_new (gdk_pixbuf_get_colorspace (src),
-			      gdk_pixbuf_get_has_alpha (src),
-			      gdk_pixbuf_get_bits_per_sample (src),
-			      gdk_pixbuf_get_width (src),
-			      gdk_pixbuf_get_height (src));
+	tmp = as_pixbuf_new (as_pixbuf_get_has_alpha (src),
+			     as_pixbuf_get_bits_per_sample (src),
+			     as_pixbuf_get_width (src),
+			     as_pixbuf_get_height (src));
 	kernel_size = 2 * radius + 1;
 	div_kernel_size = g_new (guchar, 256 * kernel_size);
 	for (i = 0; i < 256 * kernel_size; i++)
@@ -914,16 +914,16 @@ as_pixbuf_sharpen (GdkPixbuf *src, gint radius, gdouble amount)
 	guchar *p_src_row;
 	_cleanup_object_unref_ GdkPixbuf *blurred = NULL;
 
-	blurred = gdk_pixbuf_copy (src);
+	blurred = as_pixbuf_copy (src);
 	as_pixbuf_blur (blurred, radius, 3);
 
-	width = gdk_pixbuf_get_width (src);
-	height = gdk_pixbuf_get_height (src);
-	rowstride = gdk_pixbuf_get_rowstride (src);
-	n_channels = gdk_pixbuf_get_n_channels (src);
+	width = as_pixbuf_get_width (src);
+	height = as_pixbuf_get_height (src);
+	rowstride = as_pixbuf_get_rowstride (src);
+	n_channels = as_pixbuf_get_n_channels (src);
 
-	p_src = gdk_pixbuf_get_pixels (src);
-	p_blurred = gdk_pixbuf_get_pixels (blurred);
+	p_src = as_pixbuf_get_pixels (src, NULL);
+	p_blurred = as_pixbuf_get_pixels (blurred, NULL);
 
 	for (y = 0; y < height; y++) {
 		p_src_row = p_src;

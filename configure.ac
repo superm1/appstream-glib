@@ -226,6 +226,7 @@ libappstream-builder/appstream-builder.pc
 libappstream-builder/plugins/Makefile
 libappstream-glib/Makefile
 libappstream-glib/appstream-glib.pc
+libappstream-glib/appstream-glib-fakepixbuf.pc
 libappstream-glib/as-version.h
 data/Makefile
 data/installed-tests/Makefile

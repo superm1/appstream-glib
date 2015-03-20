@@ -29,6 +29,7 @@
 #include "as-app-private.h"
 #include "as-cleanup.h"
 #include "as-node-private.h"
+#include "as-pixbuf.h"
 #include "as-problem.h"
 #include "as-utils.h"
 
@@ -512,7 +513,7 @@ ai_app_validate_image_check (AsImage *im, AsAppValidateHelper *helper)
 	}
 
 	/* load the image */
-	pixbuf = gdk_pixbuf_new_from_stream (stream, NULL, NULL);
+	pixbuf = as_pixbuf_new_from_stream (stream, NULL, NULL);
 	if (pixbuf == NULL) {
 		ai_app_validate_add (helper,
 				     AS_PROBLEM_KIND_FILE_INVALID,
@@ -522,8 +523,8 @@ ai_app_validate_image_check (AsImage *im, AsAppValidateHelper *helper)
 	}
 
 	/* check width matches */
-	screenshot_width = gdk_pixbuf_get_width (pixbuf);
-	screenshot_height = gdk_pixbuf_get_height (pixbuf);
+	screenshot_width = as_pixbuf_get_width (pixbuf);
+	screenshot_height = as_pixbuf_get_height (pixbuf);
 	if (as_image_get_width (im) != 0 &&
 	    as_image_get_width (im) != screenshot_width) {
 		ai_app_validate_add (helper,

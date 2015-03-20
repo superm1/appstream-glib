@@ -37,6 +37,7 @@
 #include "as-cleanup.h"
 #include "as-icon-private.h"
 #include "as-node-private.h"
+#include "as-pixbuf.h"
 #include "as-utils-private.h"
 #include "as-yaml.h"
 
@@ -463,8 +464,8 @@ as_icon_set_pixbuf (AsIcon *icon, GdkPixbuf *pixbuf)
 		return;
 	}
 	priv->pixbuf = g_object_ref (pixbuf);
-	priv->width = gdk_pixbuf_get_width (pixbuf);
-	priv->height = gdk_pixbuf_get_height (pixbuf);
+	priv->width = as_pixbuf_get_width (pixbuf);
+	priv->height = as_pixbuf_get_height (pixbuf);
 }
 
 /**
@@ -611,7 +612,7 @@ as_icon_node_parse_embedded (AsIcon *icon, GNode *n, GError **error)
 	}
 
 	/* load the image */
-	pixbuf = gdk_pixbuf_new_from_stream (stream, NULL, error);
+	pixbuf = as_pixbuf_new_from_stream (stream, NULL, error);
 	if (pixbuf == NULL)
 		return FALSE;
 	as_icon_set_pixbuf (icon, pixbuf);
@@ -756,7 +757,7 @@ as_icon_load (AsIcon *icon, AsIconLoadFlags flags, GError **error)
 				     priv->name);
 			return FALSE;
 		}
-		pixbuf = gdk_pixbuf_new_from_file_at_size (priv->filename,
+		pixbuf = as_pixbuf_new_from_file_at_size (priv->filename,
 							   priv->width,
 							   priv->height,
 							   error);
@@ -781,7 +782,7 @@ as_icon_load (AsIcon *icon, AsIconLoadFlags flags, GError **error)
 		size_str = g_strdup_printf ("%ix%i", priv->width, priv->height);
 		fn_size = g_build_filename (priv->prefix, size_str, priv->name, NULL);
 		if (g_file_test (fn_size, G_FILE_TEST_EXISTS)) {
-			pixbuf = gdk_pixbuf_new_from_file (fn_size, error);
+			pixbuf = as_pixbuf_new_from_file (fn_size, error);
 			if (pixbuf == NULL)
 				return FALSE;
 			as_icon_set_pixbuf (icon, pixbuf);
@@ -791,7 +792,7 @@ as_icon_load (AsIcon *icon, AsIconLoadFlags flags, GError **error)
 
 	/* fall back to the old location */
 	fn_fallback = g_build_filename (priv->prefix, priv->name, NULL);
-	pixbuf = gdk_pixbuf_new_from_file (fn_fallback, error);
+	pixbuf = as_pixbuf_new_from_file (fn_fallback, error);
 	if (pixbuf == NULL)
 		return FALSE;
 	as_icon_set_pixbuf (icon, pixbuf);
@@ -835,8 +836,8 @@ as_icon_convert_to_kind (AsIcon *icon, AsIconKind kind, GError **error)
 			if (!as_icon_load (icon, AS_ICON_LOAD_FLAG_SEARCH_SIZE, error))
 				return FALSE;
 		}
-		if (!gdk_pixbuf_save_to_buffer (priv->pixbuf, &data, &data_size,
-						"png", error, NULL))
+		if (!as_pixbuf_save_to_buffer (priv->pixbuf, &data, &data_size,
+						"png", error))
 			return FALSE;
 
 		/* set the PNG buffer to a blob of data */
@@ -865,7 +866,7 @@ as_icon_convert_to_kind (AsIcon *icon, AsIconKind kind, GError **error)
 
 		/* save the pixbuf */
 		fn = g_build_filename (path, priv->name, NULL);
-		if (!gdk_pixbuf_save (priv->pixbuf, fn, "png", error, NULL))
+		if (!as_pixbuf_save (priv->pixbuf, fn, "png", error))
 			return FALSE;
 		as_icon_set_kind (icon, kind);
 		return TRUE;

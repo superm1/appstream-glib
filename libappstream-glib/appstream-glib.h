@@ -31,6 +31,7 @@
 #include <as-image.h>
 #include <as-inf.h>
 #include <as-node.h>
+#include <as-pixbuf.h>
 #include <as-problem.h>
 #include <as-provide.h>
 #include <as-release.h>

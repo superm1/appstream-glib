@@ -43,6 +43,13 @@ write AppStream metadata. It also provides a simple DOM implementation that
 makes it easy to edit nodes and convert to and from the standardized XML
 representation.
 
+%package fakepixbuf
+Summary: A version of AppStream that does not use any image libraries
+
+%description fakepixbuf
+This is a version of AppStream that does not use any image libraries and so can
+be installed without GdkPixbuf.
+
 %package devel
 Summary: GLib Libraries and headers for appstream-glib
 Requires: %{name}%{?_isa} = %{version}-%{release}
@@ -103,9 +110,12 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_datadir}/bash-completion/completions/appstream-util
 %{_mandir}/man1/appstream-util.1.gz
 
+%files fakepixbuf
+%{_libdir}/libappstream-glib-fakepixbuf.so.7*
+
 %files devel
-%{_libdir}/libappstream-glib.so
-%{_libdir}/pkgconfig/appstream-glib.pc
+%{_libdir}/libappstream-glib*.so
+%{_libdir}/pkgconfig/appstream-glib*.pc
 %dir %{_includedir}/libappstream-glib
 %{_includedir}/libappstream-glib/*.h
 %{_datadir}/gtk-doc/html/appstream-glib

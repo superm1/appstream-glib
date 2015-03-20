@@ -37,6 +37,7 @@
 #include "as-cleanup.h"
 #include "as-image-private.h"
 #include "as-node-private.h"
+#include "as-pixbuf.h"
 #include "as-utils-private.h"
 #include "as-yaml.h"
 
@@ -358,13 +359,13 @@ as_image_set_pixbuf (AsImage *image, GdkPixbuf *pixbuf)
 		return;
 	}
 	if (priv->md5 == NULL) {
-		data = gdk_pixbuf_get_pixels_with_length (pixbuf, &len);
+		data = as_pixbuf_get_pixels (pixbuf, &len);
 		priv->md5 = g_compute_checksum_for_data (G_CHECKSUM_MD5,
 							 data, len);
 	}
 	priv->pixbuf = g_object_ref (pixbuf);
-	priv->width = gdk_pixbuf_get_width (pixbuf);
-	priv->height = gdk_pixbuf_get_height (pixbuf);
+	priv->width = as_pixbuf_get_width (pixbuf);
+	priv->height = as_pixbuf_get_height (pixbuf);
 }
 
 /**
@@ -513,7 +514,7 @@ as_image_load_filename (AsImage *image,
 						 (guchar * )data, len);
 
 	/* load the image */
-	pixbuf = gdk_pixbuf_new_from_file (filename, error);
+	pixbuf = as_pixbuf_new_from_file (filename, error);
 	if (pixbuf == NULL)
 		return FALSE;
 
@@ -557,23 +558,22 @@ as_image_save_pixbuf (AsImage *image,
 
 	/* 0 means 'default' */
 	if (width == 0)
-		width = gdk_pixbuf_get_width (priv->pixbuf);
+		width = as_pixbuf_get_width (priv->pixbuf);
 	if (height == 0)
-		height = gdk_pixbuf_get_height (priv->pixbuf);
+		height = as_pixbuf_get_height (priv->pixbuf);
 
 	/* don't do anything to an image with the correct size */
-	pixbuf_width = gdk_pixbuf_get_width (priv->pixbuf);
-	pixbuf_height = gdk_pixbuf_get_height (priv->pixbuf);
+	pixbuf_width = as_pixbuf_get_width (priv->pixbuf);
+	pixbuf_height = as_pixbuf_get_height (priv->pixbuf);
 	if (width == pixbuf_width && height == pixbuf_height)
 		return g_object_ref (priv->pixbuf);
 
 	/* never scale up, just pad */
 	if (pixbuf_width < width && pixbuf_height < height &&
 	    (flags & AS_IMAGE_SAVE_FLAG_BLUR) == 0) {
-		pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
-					 TRUE, 8, width, height);
-		gdk_pixbuf_fill (pixbuf, 0x00000000);
-		gdk_pixbuf_copy_area (priv->pixbuf,
+		pixbuf = as_pixbuf_new (TRUE, 8, width, height);
+		as_pixbuf_fill (pixbuf, 0x00000000);
+		as_pixbuf_copy_area (priv->pixbuf,
 				      0, 0, /* of src */
 				      pixbuf_width, pixbuf_height,
 				      pixbuf,
@@ -585,9 +585,7 @@ as_image_save_pixbuf (AsImage *image,
 	/* is the aspect ratio of the source perfectly 16:9 */
 	if (flags == AS_IMAGE_SAVE_FLAG_NONE ||
 	    (pixbuf_width / 16) * 9 == pixbuf_height) {
-		pixbuf = gdk_pixbuf_scale_simple (priv->pixbuf,
-						  width, height,
-						  GDK_INTERP_HYPER);
+		pixbuf = as_pixbuf_scale_simple (priv->pixbuf, width, height);
 		if ((flags & AS_IMAGE_SAVE_FLAG_SHARPEN) > 0)
 			as_pixbuf_sharpen (pixbuf, 1, -0.5);
 		if ((flags & AS_IMAGE_SAVE_FLAG_BLUR) > 0)
@@ -596,11 +594,8 @@ as_image_save_pixbuf (AsImage *image,
 	}
 
 	/* create new 16:9 pixbuf with alpha padding */
-	pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
-				 TRUE, 8,
-				 width,
-				 height);
-	gdk_pixbuf_fill (pixbuf, 0x00000000);
+	pixbuf = as_pixbuf_new (TRUE, 8, width, height);
+	as_pixbuf_fill (pixbuf, 0x00000000);
 	if ((pixbuf_width / 16) * 9 > pixbuf_height) {
 		tmp_width = width;
 		tmp_height = width * pixbuf_height / pixbuf_width;
@@ -608,14 +603,12 @@ as_image_save_pixbuf (AsImage *image,
 		tmp_width = height * pixbuf_width / pixbuf_height;
 		tmp_height = height;
 	}
-	pixbuf_tmp = gdk_pixbuf_scale_simple (priv->pixbuf,
-					      tmp_width, tmp_height,
-					      GDK_INTERP_HYPER);
+	pixbuf_tmp = as_pixbuf_scale_simple (priv->pixbuf, tmp_width, tmp_height);
 	if ((flags & AS_IMAGE_SAVE_FLAG_SHARPEN) > 0)
 		as_pixbuf_sharpen (pixbuf_tmp, 1, -0.5);
 	if ((flags & AS_IMAGE_SAVE_FLAG_BLUR) > 0)
 		as_pixbuf_blur (pixbuf_tmp, 5, 3);
-	gdk_pixbuf_copy_area (pixbuf_tmp,
+	as_pixbuf_copy_area (pixbuf_tmp,
 			      0, 0, /* of src */
 			      tmp_width, tmp_height,
 			      pixbuf,
@@ -651,11 +644,10 @@ as_image_save_filename (AsImage *image,
 
 	/* save source file */
 	pixbuf = as_image_save_pixbuf (image, width, height, flags);
-	return gdk_pixbuf_save (pixbuf,
+	return as_pixbuf_save (pixbuf,
 				filename,
 				"png",
-				error,
-				NULL);
+				error);
 }
 
 /**
@@ -667,9 +659,9 @@ is_pixel_alpha (GdkPixbuf *pixbuf, guint x, guint y)
 	gint rowstride, n_channels;
 	guchar *pixels, *p;
 
-	n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-	rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-	pixels = gdk_pixbuf_get_pixels (pixbuf);
+	n_channels = as_pixbuf_get_n_channels (pixbuf);
+	rowstride = as_pixbuf_get_rowstride (pixbuf);
+	pixels = as_pixbuf_get_pixels (pixbuf, NULL);
 
 	p = pixels + y * rowstride + x * n_channels;
 	return p[3] == 0;
@@ -716,11 +708,11 @@ as_image_get_alpha_flags (AsImage *image)
 	guint cnt_content_to_alpha_h;
 	guint cnt_content_to_alpha_v = 0;
 
-	if (!gdk_pixbuf_get_has_alpha (priv->pixbuf))
+	if (!as_pixbuf_get_has_alpha (priv->pixbuf))
 		return AS_IMAGE_ALPHA_FLAG_NONE;
 
-	width = gdk_pixbuf_get_width (priv->pixbuf);
-	height = gdk_pixbuf_get_height (priv->pixbuf);
+	width = as_pixbuf_get_width (priv->pixbuf);
+	height = as_pixbuf_get_height (priv->pixbuf);
 	for (y = 0; y < height; y++) {
 		mode_h = AS_IMAGE_ALPHA_MODE_START;
 		complete_line_of_alpha = TRUE;

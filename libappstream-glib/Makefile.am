@@ -21,6 +21,7 @@ AM_CPPFLAGS =							\
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = 						\
+	appstream-glib-fakepixbuf.pc				\
 	appstream-glib.pc
 
 if HAVE_GPERF
@@ -62,6 +63,7 @@ BUILT_SOURCES =							\
 	as-resources.h
 
 lib_LTLIBRARIES =						\
+	libappstream-glib-fakepixbuf.la				\
 	libappstream-glib.la
 
 libappstream_glib_includedir = $(includedir)/libappstream-glib
@@ -74,6 +76,7 @@ libappstream_glib_include_HEADERS =				\
 	as-image.h						\
 	as-inf.h						\
 	as-node.h						\
+	as-pixbuf.h						\
 	as-problem.h						\
 	as-provide.h						\
 	as-release.h						\
@@ -83,7 +86,7 @@ libappstream_glib_include_HEADERS =				\
 	as-utils.h						\
 	as-version.h
 
-libappstream_glib_la_SOURCES =					\
+libappstream_glib_SOURCES =					\
 	as-app.c						\
 	as-app-desktop.c					\
 	as-app-inf.c						\
@@ -101,6 +104,7 @@ libappstream_glib_la_SOURCES =					\
 	as-inf.h						\
 	as-node.c						\
 	as-node-private.h					\
+	as-pixbuf.h						\
 	as-problem.c						\
 	as-problem.h						\
 	as-provide.c						\
@@ -120,11 +124,15 @@ libappstream_glib_la_SOURCES =					\
 	as-yaml.h
 
 if HAVE_GPERF
-libappstream_glib_la_SOURCES += as-tag-private.h
+libappstream_glib_SOURCES += as-tag-private.h
 BUILT_SOURCES += as-tag-private.h
 endif
 
 CLEANFILES = $(BUILT_SOURCES)
+
+libappstream_glib_la_SOURCES =					\
+	as-pixbuf-gdk.c						\
+	$(libappstream_glib_SOURCES)
 
 libappstream_glib_la_LIBADD =					\
 	$(GLIB_LIBS)						\
@@ -142,6 +150,25 @@ libappstream_glib_la_LDFLAGS =					\
 libappstream_glib_la_CFLAGS =					\
 	$(WARNINGFLAGS_C)
 
+libappstream_glib_fakepixbuf_la_SOURCES =			\
+	as-pixbuf-fake.c					\
+	$(libappstream_glib_SOURCES)
+
+libappstream_glib_fakepixbuf_la_LIBADD =			\
+	$(GLIB_LIBS)						\
+	$(LIBARCHIVE_LIBS)					\
+	$(SOUP_LIBS)						\
+	$(YAML_LIBS)
+
+libappstream_glib_fakepixbuf_la_LDFLAGS =			\
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
+	-export-dynamic						\
+	-no-undefined						\
+	-export-symbols-regex '^as_.*'
+
+libappstream_glib_fakepixbuf_la_CFLAGS =			\
+	$(WARNINGFLAGS_C)
+
 check_PROGRAMS =						\
 	as-self-test
 as_self_test_SOURCES =						\
@@ -152,7 +179,7 @@ as_self_test_LDADD =						\
 	$(LIBARCHIVE_LIBS)					\
 	$(SOUP_LIBS)						\
 	$(YAML_LIBS)						\
-	$(lib_LTLIBRARIES)
+	libappstream-glib.la
 as_self_test_CFLAGS = $(WARNINGFLAGS_C)
 
 TESTS = as-self-test
