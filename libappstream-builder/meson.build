@@ -1,3 +1,8 @@
+# Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2015 Igor Gnatenko <i.gnatenko.brain@gmail.com>
+#
+# Licensed under the GNU Lesser General Public License Version 2.1
+
 asbuilder_cargs = [
   '-DG_LOG_DOMAIN="Asb"',
   '-DASB_PLUGIN_DIR="@0@/@1@/asb-plugins-@2@"'.format(

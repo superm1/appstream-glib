@@ -1,3 +1,7 @@
+# Copyright (C) 2015 Igor Gnatenko <i.gnatenko.brain@gmail.com>
+#
+# Licensed under the GNU Lesser General Public License Version 2.1
+
 asb_plugins_cargs = ['-DG_LOG_DOMAIN="Asb"']
 
 asb_plugins = [

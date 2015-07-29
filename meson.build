@@ -1,4 +1,9 @@
-project('libappstream-glib', 'c')
+# Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2015 Igor Gnatenko <i.gnatenko.brain@gmail.com>
+#
+# Licensed under the GNU Lesser General Public License Version 2.1
+
+project('appstream-glib', 'c')
 
 as_major_version = '0'
 as_minor_version = '4'
@@ -43,6 +48,8 @@ libarchive = dependency('libarchive')
 soup = dependency('libsoup-2.4', version : '>= 2.24')
 gdk = dependency('gdk-3.0')
 gdkpixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.14')
+
+# builder (default enabled)
 if get_option('enable-builder')
   gtk = dependency('gtk+-3.0')
   sqlite = dependency('sqlite3')
@@ -60,7 +67,10 @@ if get_option('enable-dep11')
 else
   yaml = dependency('yaml-0.1', required : false)
 endif
+
+# use gperf for faster string -> enum matching
 gperf = find_program('gperf', required : false)
+
 gnome = import('gnome')
 
 if gperf.found()
@@ -76,9 +86,14 @@ add_global_arguments('-DAS_COMPILATION', language : 'c')
 add_global_arguments('-DLOCALEDIR="@0@"'.format(get_option('localedir')), language : 'c')
 
 subdir('libappstream-glib')
+subdir('data')
+
 if get_option('enable-builder')
+  # depends on data
   subdir('libappstream-builder')
 endif
+
+# depends on libappstream-builder
 subdir('client')
 
 #rpm = import('rpm')
