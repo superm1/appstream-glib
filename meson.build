@@ -1,8 +1,8 @@
 project('libappstream-glib', 'c')
 
 as_major_version = '0'
-as_minor_version = '3'
-as_micro_version = '6'
+as_minor_version = '4'
+as_micro_version = '2'
 as_version = '@0@.@1@.@2@'.format(as_major_version, as_minor_version, as_micro_version)
 
 conf = configuration_data()
@@ -29,7 +29,7 @@ conf.set('PACKAGE_VERSION', '"@0@"'.format(as_version))
 #   fixed, change:
 #      REVISION += 1
 lt_current = '7'
-lt_revision = '3'
+lt_revision = '5'
 lt_age = '0'
 lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
 
