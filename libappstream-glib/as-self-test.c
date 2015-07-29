@@ -243,11 +243,9 @@ as_test_monitor_file_func (void)
 	_cleanup_object_unref_ AsMonitor *mon = NULL;
 	_cleanup_error_free_ GError *error = NULL;
 	const gchar *tmpfile = "/tmp/one.txt";
-	const gchar *tmpfile_new = "/tmp/two.txt";
 	_cleanup_free_ gchar *cmd_touch = NULL;
 
 	g_unlink (tmpfile);
-	g_unlink (tmpfile_new);
 
 	mon = as_monitor_new ();
 	g_signal_connect (mon, "added",
