@@ -1083,7 +1083,7 @@ as_node_set_data (GNode *node,
 void
 as_node_set_comment (GNode *node, const gchar *comment, gssize comment_len)
 {
-	return as_node_add_attribute (node, "@comment", comment, comment_len);
+	as_node_add_attribute (node, "@comment", comment, comment_len);
 }
 
 /**
