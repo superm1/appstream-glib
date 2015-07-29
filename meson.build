@@ -11,6 +11,10 @@ conf.set('AS_MINOR_VERSION', as_minor_version)
 conf.set('AS_MICRO_VERSION', as_micro_version)
 conf.set('PACKAGE_VERSION', '"@0@"'.format(as_version))
 
+# this refers to the plugin API version
+# this is not in any way related to a package or soname version
+as_plugin_version = '2'
+
 # libtool versioning - this applies to libpackagekit
 #
 # See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
@@ -34,6 +38,7 @@ lt_age = '0'
 lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
 
 glib = dependency('glib-2.0')
+gmodule = dependency('gmodule-2.0')
 libarchive = dependency('libarchive')
 soup = dependency('libsoup-2.4', version : '>= 2.24')
 gdkpixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.14')
@@ -64,6 +69,7 @@ conf.set('GETTEXT_PACKAGE', '"appstream-glib"')
 configure_file(input : 'config.h.in',
                output : 'config.h',
                configuration : conf)
+top_build_incdir = include_directories(meson.current_build_dir())
 
 add_global_arguments('-DAS_COMPILATION', language : 'c')
 add_global_arguments('-DLOCALEDIR="@0@"'.format(get_option('localedir')), language : 'c')
