@@ -73,6 +73,7 @@ asb_self_test = executable(
   c_args : cargs + [
     '-DTESTDIRSRC="@0@/../data/tests"'.format(meson.current_source_dir()),
     '-DTESTDIRBUILD="@0@/data/tests"'.format(meson.current_build_dir()),
+    '-DTESTPLUGINDIR="@0@/plugins"'.format(meson.current_build_dir()),
   ],
   link_with : asbuilder
 )
