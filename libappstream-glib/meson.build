@@ -87,6 +87,7 @@ asglib = shared_library(
   link_args : ['-Wl,--no-undefined', vflag],
   link_depends : mapfile,
   install : true)
+asglib_incdir = include_directories('.')
 
 pkgconfig_gen(
   version : as_version,
