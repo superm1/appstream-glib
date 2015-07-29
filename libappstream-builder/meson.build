@@ -1,4 +1,4 @@
-cargs = [
+asbuilder_cargs = [
   '-DG_LOG_DOMAIN="Asb"',
   '-DASB_PLUGIN_DIR="@0@/@1@/asb-plugins-@2@"'.format(
     get_option('prefix'), get_option('libdir'),
@@ -42,7 +42,7 @@ asbuilder = shared_library(
   soversion : lt_current,
   version : lt_version,
   dependencies : deps,
-  c_args : cargs,
+  c_args : asbuilder_cargs,
   include_directories : [
     top_build_incdir,
     asglib_incdir,
@@ -52,6 +52,8 @@ asbuilder = shared_library(
   link_with : asglib,
   install : true)
 asbuilder_incdir = include_directories('.')
+
+subdir('plugins')
 
 pkgconfig_gen(
   version : as_version,
