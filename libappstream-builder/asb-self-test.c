@@ -260,6 +260,7 @@ asb_test_plugin_loader_func (void)
 	/* set up loader */
 	ctx = asb_context_new ();
 	loader = asb_context_get_plugin_loader (ctx);
+	asb_plugin_loader_set_dir (loader, TESTPLUGINDIR);
 	ret = asb_plugin_loader_setup (loader, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
