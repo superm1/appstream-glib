@@ -3323,6 +3323,27 @@ as_util_mirror_screenshots (AsUtilPrivate *priv, gchar **values, GError **error)
 }
 
 /**
+ * as_util_find_filename_from_release:
+ **/
+static const gchar *
+as_util_find_filename_from_release (AsRelease *release)
+{
+	AsChecksum *csum;
+	GPtrArray *checksums;
+	const gchar *tmp;
+	guint i;
+
+	checksums = as_release_get_checksums (release);
+	for (i = 0; i < checksums->len; i++) {
+		csum = g_ptr_array_index (checksums, i);
+		tmp = as_checksum_get_filename (csum);
+		if (g_str_has_suffix (tmp, ".cab"))
+			return tmp;
+	}
+	return NULL;
+}
+
+/**
  * as_util_mirror_local_firmware:
  **/
 static gboolean
@@ -3372,7 +3393,7 @@ as_util_mirror_local_firmware (AsUtilPrivate *priv, gchar **values, GError **err
 
 			/* get the release filename, but fall back to
 			 * the default location basename if unset */
-			tmp = as_release_get_filename (rel);
+			tmp = as_util_find_filename_from_release (rel);
 			if (tmp != NULL) {
 				fn = g_strdup (tmp);
 			} else {
