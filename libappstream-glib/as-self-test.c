@@ -3814,10 +3814,13 @@ as_test_utils_vercmp_func (void)
 {
 	/* same */
 	g_assert_cmpint (as_utils_vercmp ("1.2.3", "1.2.3"), ==, 0);
+	g_assert_cmpint (as_utils_vercmp ("66051", "0x10203"), ==, 0);
 
 	/* upgrade and downgrade */
 	g_assert_cmpint (as_utils_vercmp ("1.2.3", "1.2.4"), <, 0);
 	g_assert_cmpint (as_utils_vercmp ("1.2.3", "1.2.2"), >, 0);
+	g_assert_cmpint (as_utils_vercmp ("66051", "0x10204"), <, 0);
+	g_assert_cmpint (as_utils_vercmp ("66051", "0x10202"), >, 0);
 
 	/* unequal depth */
 	g_assert_cmpint (as_utils_vercmp ("1.2.3", "1.2.3.1"), <, 0);

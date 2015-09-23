@@ -1391,6 +1391,8 @@ as_utils_vercmp (const gchar *version_a, const gchar *version_b)
 	gchar *endptr;
 	gint64 ver_a;
 	gint64 ver_b;
+	gint8 base_a;
+	gint8 base_b;
 	guint i;
 	guint longest_split;
 	g_auto(GStrv) split_a = NULL;
@@ -1416,13 +1418,23 @@ as_utils_vercmp (const gchar *version_a, const gchar *version_b)
 		if (split_b[i] == NULL)
 			return 1;
 
+		/* detect base */
+		if (split_a[i][0] == '0' && g_ascii_toupper(split_a[i][1]) == 'X')
+			base_a = 16;
+		else
+			base_a = 10;
+		if (split_b[i][0] == '0' && g_ascii_toupper(split_b[i][1]) == 'X')
+			base_b = 16;
+		else
+			base_b = 10;
+
 		/* compare integers */
-		ver_a = g_ascii_strtoll (split_a[i], &endptr, 10);
+		ver_a = g_ascii_strtoll (split_a[i], &endptr, base_a);
 		if (endptr != NULL && endptr[0] != '\0')
 			return G_MAXINT;
 		if (ver_a < 0)
 			return G_MAXINT;
-		ver_b = g_ascii_strtoll (split_b[i], &endptr, 10);
+		ver_b = g_ascii_strtoll (split_b[i], &endptr, base_b);
 		if (endptr != NULL && endptr[0] != '\0')
 			return G_MAXINT;
 		if (ver_b < 0)
